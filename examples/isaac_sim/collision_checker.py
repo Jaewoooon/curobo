@@ -27,7 +27,12 @@ a = torch.zeros(4, device="cuda:0")
 import argparse
 
 # Third Party
-from omni.isaac.kit import SimulationApp
+try:
+    # Isaac Sim 4.5.0
+    from isaacsim import SimulationApp
+except ImportError:
+    # Isaac Sim 4.0.0
+    from omni.isaac.kit import SimulationApp
 
 parser = argparse.ArgumentParser()
 parser.add_argument(
@@ -53,9 +58,24 @@ simulation_app = SimulationApp(
 import carb
 import numpy as np
 from helper import add_extensions
-from omni.isaac.core import World
-from omni.isaac.core.materials import OmniPBR
-from omni.isaac.core.objects import sphere
+try:
+    # Isaac Sim 4.5.0 imports
+    from isaacsim.core.api.world import World
+except ImportError:
+    # Isaac Sim 4.0.0 imports
+    from omni.isaac.core import World
+try:
+    # Isaac Sim 4.5.0 imports
+    from isaacsim.core.materials import OmniPBR
+except ImportError:
+    # Isaac Sim 4.0.0 imports
+    from omni.isaac.core.materials import OmniPBR
+try:
+    # Isaac Sim 4.5.0 imports
+    from isaacsim.core.prims.objects import sphere
+except ImportError:
+    # Isaac Sim 4.0.0 imports
+    from omni.isaac.core.objects import sphere
 
 # CuRobo
 # from curobo.wrap.reacher.ik_solver import IKSolver, IKSolverConfig
@@ -69,6 +89,15 @@ from curobo.util.logger import setup_curobo_logger
 from curobo.util.usd_helper import UsdHelper
 from curobo.util_file import get_world_configs_path, join_path, load_yaml
 from curobo.wrap.model.robot_world import RobotWorld, RobotWorldConfig
+
+# Flag to detect Isaac Sim version
+ISAAC_SIM_45 = False
+try:
+    import isaacsim
+    ISAAC_SIM_45 = True
+except ImportError:
+    ISAAC_SIM_45 = False
+
 
 
 def draw_line(start, gradient):

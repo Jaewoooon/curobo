@@ -22,12 +22,15 @@ import torch
 a = torch.zeros(4, device="cuda:0")
 
 # Standard Library
-
-# Standard Library
 import argparse
 
-# Third Party
-from omni.isaac.kit import SimulationApp
+# Try to import from Isaac Sim 4.5.0 first, then fall back to 4.0.0
+try:
+    # Isaac Sim 4.5.0
+    from isaacsim import SimulationApp
+except ImportError:
+    # Isaac Sim 4.0.0
+    from omni.isaac.kit import SimulationApp
 
 parser = argparse.ArgumentParser()
 
@@ -50,9 +53,18 @@ simulation_app = SimulationApp(
 import carb
 import numpy as np
 from helper import add_extensions
-from omni.isaac.core import World
-from omni.isaac.core.materials import OmniPBR
-from omni.isaac.core.objects import sphere
+
+# Try to import from Isaac Sim 4.5.0 first, then fall back to 4.0.0
+try:
+    # Isaac Sim 4.5.0 imports
+    from isaacsim.core.api.world import World
+    from isaacsim.core.materials import OmniPBR
+    from isaacsim.core.prims.objects import sphere
+except ImportError:
+    # Isaac Sim 4.0.0 imports
+    from omni.isaac.core import World
+    from omni.isaac.core.materials import OmniPBR
+    from omni.isaac.core.objects import sphere
 
 # CuRobo
 # from curobo.wrap.reacher.ik_solver import IKSolver, IKSolverConfig

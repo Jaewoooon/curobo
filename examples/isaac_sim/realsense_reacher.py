@@ -22,7 +22,12 @@ import torch
 
 a = torch.zeros(4, device="cuda:0")
 # Third Party
-from omni.isaac.kit import SimulationApp
+try:
+    # Isaac Sim 4.5.0
+    from isaacsim import SimulationApp
+except ImportError:
+    # Isaac Sim 4.0.0
+    from omni.isaac.kit import SimulationApp
 
 simulation_app = SimulationApp(
     {
@@ -57,13 +62,37 @@ import argparse
 # Third Party
 import carb
 from helper import VoxelManager, add_robot_to_scene
-from omni.isaac.core import World
-from omni.isaac.core.materials import OmniPBR
-from omni.isaac.core.objects import cuboid, sphere
+try:
+    # Isaac Sim 4.5.0 imports
+    from isaacsim.core.api.world import World
+except ImportError:
+    # Isaac Sim 4.0.0 imports
+    from omni.isaac.core import World
+try:
+    # Isaac Sim 4.5.0 imports
+    from isaacsim.core.materials import OmniPBR
+except ImportError:
+    # Isaac Sim 4.0.0 imports
+    from omni.isaac.core.materials import OmniPBR
+try:
+    # Isaac Sim 4.5.0 imports
+    from isaacsim.core.prims.objects import cuboid
+except ImportError:
+    # Isaac Sim 4.0.0 imports
+    from omni.isaac.core.objects import cuboid, sphere
 from omni.isaac.core.utils.types import ArticulationAction
 
 # CuRobo
 from curobo.util.usd_helper import UsdHelper
+
+# Flag to detect Isaac Sim version
+ISAAC_SIM_45 = False
+try:
+    import isaacsim
+    ISAAC_SIM_45 = True
+except ImportError:
+    ISAAC_SIM_45 = False
+
 
 parser = argparse.ArgumentParser()
 

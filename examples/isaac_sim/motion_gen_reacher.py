@@ -87,8 +87,12 @@ args = parser.parse_args()
 
 ############################################################
 
-# Third Party
-from omni.isaac.kit import SimulationApp
+try:
+    # Third Party
+    from isaacsim import SimulationApp
+except ImportError:
+    # Third Party
+    from omni.isaac.kit import SimulationApp
 
 simulation_app = SimulationApp(
     {
@@ -101,15 +105,33 @@ simulation_app = SimulationApp(
 from typing import Dict
 
 # Third Party
+# Import World
+try:
+    # Isaac Sim 4.5.0 imports
+    from isaacsim.core.api.world import World
+except ImportError:
+    # Isaac Sim 4.0.0 imports
+    from omni.isaac.core import World
+
+# Import objects
+try:
+    # Isaac Sim 4.5.0 imports
+    from isaacsim.core.prims.objects import cuboid, sphere
+except ImportError:
+    # Isaac Sim 4.0.0 imports
+    from omni.isaac.core.objects import cuboid, sphere
+
+# Import types
+try:
+    # Isaac Sim 4.5.0 imports
+    from isaacsim.core.utils.types import ArticulationAction
+except ImportError:
+    # Isaac Sim 4.0.0 imports
+    from omni.isaac.core.utils.types import ArticulationAction
+
 import carb
 import numpy as np
 from helper import add_extensions, add_robot_to_scene
-from omni.isaac.core import World
-from omni.isaac.core.objects import cuboid, sphere
-
-########### OV #################
-from omni.isaac.core.utils.types import ArticulationAction
-
 # CuRobo
 # from curobo.wrap.reacher.ik_solver import IKSolver, IKSolverConfig
 from curobo.geom.sdf.world import CollisionCheckerType
@@ -142,7 +164,9 @@ from curobo.wrap.reacher.motion_gen import (
 ########### OV #################;;;;;
 
 
+# Main function to initialize and run the motion generation reacher example
 def main():
+    # Initialize the motion generation reacher example
     # create a curobo motion gen instance:
     num_targets = 0
     # assuming obstacles are in objects_path:
@@ -443,4 +467,5 @@ def main():
 
 
 if __name__ == "__main__":
+    # Run the motion generation reacher example
     main()

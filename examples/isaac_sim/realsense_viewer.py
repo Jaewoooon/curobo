@@ -14,6 +14,15 @@ import cv2
 import numpy as np
 from nvblox_torch.datasets.realsense_dataset import RealsenseDataloader
 
+# Flag to detect Isaac Sim version
+ISAAC_SIM_45 = False
+try:
+    import isaacsim
+    ISAAC_SIM_45 = True
+except ImportError:
+    ISAAC_SIM_45 = False
+
+
 
 def view_realsense():
     realsense_data = RealsenseDataloader(clipping_distance_m=1.0)

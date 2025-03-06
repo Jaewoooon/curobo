@@ -47,7 +47,12 @@ args = parser.parse_args()
 ############################################################
 
 # Third Party
-from omni.isaac.kit import SimulationApp
+try:
+    # Isaac Sim 4.5.0
+    from isaacsim import SimulationApp
+except ImportError:
+    # Isaac Sim 4.0.0
+    from omni.isaac.kit import SimulationApp
 
 simulation_app = SimulationApp(
     {
@@ -60,8 +65,18 @@ simulation_app = SimulationApp(
 import carb
 import numpy as np
 from helper import add_extensions, add_robot_to_scene
-from omni.isaac.core import World
-from omni.isaac.core.objects import cuboid, sphere
+try:
+    # Isaac Sim 4.5.0 imports
+    from isaacsim.core.api.world import World
+except ImportError:
+    # Isaac Sim 4.0.0 imports
+    from omni.isaac.core import World
+try:
+    # Isaac Sim 4.5.0 imports
+    from isaacsim.core.prims.objects import cuboid
+except ImportError:
+    # Isaac Sim 4.0.0 imports
+    from omni.isaac.core.objects import cuboid, sphere
 
 ########### OV #################
 from omni.isaac.core.utils.types import ArticulationAction
@@ -81,6 +96,15 @@ from curobo.util.logger import setup_curobo_logger
 from curobo.util.usd_helper import UsdHelper
 from curobo.util_file import get_robot_configs_path, get_world_configs_path, join_path, load_yaml
 from curobo.wrap.reacher.motion_gen import MotionGen, MotionGenConfig, MotionGenPlanConfig
+
+# Flag to detect Isaac Sim version
+ISAAC_SIM_45 = False
+try:
+    import isaacsim
+    ISAAC_SIM_45 = True
+except ImportError:
+    ISAAC_SIM_45 = False
+
 
 ############################################################
 

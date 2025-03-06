@@ -10,16 +10,89 @@
 #
 
 # Standard Library
-from typing import Dict, List
+from typing import Dict, List, Optional
 
 # Third Party
 import numpy as np
 from matplotlib import cm
-from omni.isaac.core import World
-from omni.isaac.core.materials import OmniPBR
-from omni.isaac.core.objects import cuboid
-from omni.isaac.core.robots import Robot
-from pxr import UsdPhysics
+
+# Flag to detect Isaac Sim version
+ISAAC_SIM_45 = False
+try:
+    import isaacsim
+    ISAAC_SIM_45 = True
+except ImportError:
+    ISAAC_SIM_45 = False
+
+# Try to import from Isaac Sim 4.5.0 first, then fall back to 4.0.0
+# Import World
+try:
+    # Isaac Sim 4.5.0 imports
+    from isaacsim.core.api.world import World
+    ISAAC_SIM_45 = True
+except ImportError:
+    # Isaac Sim 4.0.0 imports
+    from omni.isaac.core import World
+    ISAAC_SIM_45 = False
+
+# Import objects
+try:
+    # Isaac Sim 4.5.0 imports
+    from isaacsim.core.prims.objects import cuboid
+except ImportError:
+    # Isaac Sim 4.0.0 imports
+    from omni.isaac.core.objects import cuboid
+
+# Import Robot
+try:
+    # Isaac Sim 4.5.0 imports
+    from isaacsim.core.robots import Robot
+except ImportError:
+    # Isaac Sim 4.0.0 imports
+    from omni.isaac.core.robots import Robot
+
+from pxr import UsdPhysics, Sdf, UsdShade, Gf
+
+# Custom OmniPBR implementation to avoid DeformableMaterialView import issue
+class OmniPBR:
+    """A simplified implementation of OmniPBR that doesn't rely on problematic imports"""
+    
+    def __init__(self, prim_path, color=None):
+        """Initialize the OmniPBR material"""
+        from omni.usd import get_context
+        stage = get_context().get_stage()
+        
+        # Create the material prim
+        self._prim_path = prim_path
+        self._prim = stage.DefinePrim(prim_path, "Material")
+        
+        # Create the shader
+        shader_path = f"{prim_path}/Shader"
+        self._shader = UsdShade.Shader.Define(stage, shader_path)
+        self._shader.CreateIdAttr("OmniPBR")
+        
+        # Create the material output
+        material = UsdShade.Material.Define(stage, prim_path)
+        material.CreateSurfaceOutput().ConnectToSource(self._shader.ConnectableAPI(), "surface")
+        
+        # Set color if provided
+        if color is not None:
+            self.set_color(color)
+    
+    def set_color(self, color):
+        """Set the diffuse color of the material"""
+        if isinstance(color, (list, np.ndarray)):
+            if len(color) == 3:
+                color = Gf.Vec3f(float(color[0]), float(color[1]), float(color[2]))
+            elif len(color) == 4:
+                color = Gf.Vec3f(float(color[0]), float(color[1]), float(color[2]))
+        
+        # Set the diffuse color
+        self._shader.CreateInput("diffuse_color", Sdf.ValueTypeNames.Color3f).Set(color)
+        
+        # Set metallic and roughness for a plastic-like material
+        self._shader.CreateInput("metallic", Sdf.ValueTypeNames.Float).Set(0.0)
+        self._shader.CreateInput("roughness", Sdf.ValueTypeNames.Float).Set(0.4)
 
 # CuRobo
 from curobo.util.logger import log_warn
@@ -30,15 +103,19 @@ try:
     # Third Party
     from omni.isaac.urdf import _urdf  # isaacsim 2022.2
 except ImportError:
-    # Third Party
-    from omni.importer.urdf import _urdf  # isaac sim 2023.1 or above
+    try:
+        # Isaac Sim 4.5.0
+        from isaacsim.importer.urdf import _urdf  # isaac sim 4.5.0
+    except ImportError:
+        # Isaac Sim 2023.1
+        from omni.importer.urdf import _urdf  # isaac sim 2023.1 or above
+        ISAAC_SIM_23 = True
 
-    ISAAC_SIM_23 = True
-# Standard Library
-from typing import Optional
-
-# Third Party
-from omni.isaac.core.utils.extensions import enable_extension
+# Try to import from Isaac Sim 4.5.0 first for extensions
+try:
+    from isaacsim.core.utils.extensions import enable_extension
+except ImportError:
+    from omni.isaac.core.utils.extensions import enable_extension
 
 # CuRobo
 from curobo.util_file import get_assets_path, get_filename, get_path_of_dir, join_path

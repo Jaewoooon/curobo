@@ -10,7 +10,7 @@
 ##
 
 # Check architecture and load:
-ARG IMAGE_TAG
+ARG IMAGE_TAG=isaac_sim
 FROM curobo_docker:${IMAGE_TAG}
 # Set variables
 ARG USERNAME
@@ -21,8 +21,7 @@ ARG CACHE_DATE=2024-07-19
 # Set environment variables
 
 # Set up sudo user
-#RUN /sbin/adduser --disabled-password --gecos '' --uid $USER_ID $USERNAME
-RUN useradd -l -u $USER_ID -g users $USERNAME
+RUN useradd -m -u $USER_ID -g users -s /bin/bash $USERNAME
 
 RUN /sbin/adduser $USERNAME sudo
 RUN echo '%sudo ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers
@@ -42,10 +41,11 @@ RUN mkdir -p /isaac-sim/kit/logs/Kit/Isaac-Sim && chown -R $USERNAME:users /isaa
 #RUN chown -R $USERNAME:users /root/.cache/nvidia/GLCache
 #RUN chown -R $USERNAME:users /root/.local/share/ov
 RUN mkdir /root/.nvidia-omniverse/logs && mkdir -p /home/$USERNAME/.nvidia-omniverse && cp -r /root/.nvidia-omniverse/* /home/$USERNAME/.nvidia-omniverse && chown -R $USERNAME:users /home/$USERNAME/.nvidia-omniverse
-RUN chown -R $USERNAME:users /isaac-sim/exts/omni.isaac.synthetic_recorder/
-RUN chown -R $USERNAME:users /isaac-sim/kit/exts/omni.gpu_foundation
+RUN if [ -d "/isaac-sim/exts/omni.isaac.synthetic_recorder/" ]; then chown -R $USERNAME:users /isaac-sim/exts/omni.isaac.synthetic_recorder/; fi
+RUN if [ -d "/isaac-sim/kit/exts/omni.gpu_foundation" ]; then chown -R $USERNAME:users /isaac-sim/kit/exts/omni.gpu_foundation; fi
 RUN mkdir -p /home/$USERNAME/.cache && cp -r /root/.cache/* /home/$USERNAME/.cache && chown -R $USERNAME:users /home/$USERNAME/.cache
-RUN mkdir -p /isaac-sim/kit/data/documents/Kit && mkdir -p /isaac-sim/kit/data/documents/Kit/apps/Isaac-Sim/scripts/ &&chown -R $USERNAME:users /isaac-sim/kit/data/documents/Kit /isaac-sim/kit/data/documents/Kit/apps/Isaac-Sim/scripts/
+RUN if [ -d "/isaac-sim/kit/data/documents/Kit" ]; then chown -R $USERNAME:users /isaac-sim/kit/data/documents/Kit; fi
+RUN if [ -d "/isaac-sim/kit/data/documents/Kit/apps/Isaac-Sim/scripts/" ]; then chown -R $USERNAME:users /isaac-sim/kit/data/documents/Kit/apps/Isaac-Sim/scripts/; fi
 RUN mkdir -p /home/$USERNAME/.local
 
 
@@ -61,12 +61,10 @@ USER $USERNAME
 WORKDIR /home/$USERNAME
 ENV USER=$USERNAME
 ENV PATH="${PATH}:/home/${USER}/.local/bin"
-ENV SHELL /bin/bash
+ENV SHELL=/bin/bash
 ENV OMNI_USER=admin
 ENV OMNI_PASS=admin
-
 
 RUN mkdir /root/Documents && chown -R $USERNAME:users /root/Documents
 
 RUN echo 'completed'
-

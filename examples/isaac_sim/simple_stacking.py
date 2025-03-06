@@ -52,7 +52,12 @@ parser.add_argument(
 args = parser.parse_args()
 
 # Third Party
-from omni.isaac.kit import SimulationApp
+try:
+    # Isaac Sim 4.5.0
+    from isaacsim import SimulationApp
+except ImportError:
+    # Isaac Sim 4.0.0
+    from omni.isaac.kit import SimulationApp
 
 simulation_app = SimulationApp(
     {
@@ -67,7 +72,12 @@ from typing import Optional
 # Third Party
 import carb
 from helper import add_extensions
-from omni.isaac.core import World
+try:
+    # Isaac Sim 4.5.0 imports
+    from isaacsim.core.api.world import World
+except ImportError:
+    # Isaac Sim 4.0.0 imports
+    from omni.isaac.core import World
 from omni.isaac.core.controllers import BaseController
 from omni.isaac.core.tasks import Stacking as BaseStacking
 from omni.isaac.core.utils.prims import is_prim_path_valid
@@ -89,6 +99,15 @@ from curobo.types.state import JointState
 from curobo.util.usd_helper import UsdHelper
 from curobo.util_file import get_robot_configs_path, get_world_configs_path, join_path, load_yaml
 from curobo.wrap.reacher.motion_gen import (
+
+# Flag to detect Isaac Sim version
+ISAAC_SIM_45 = False
+try:
+    import isaacsim
+    ISAAC_SIM_45 = True
+except ImportError:
+    ISAAC_SIM_45 = False
+
     MotionGen,
     MotionGenConfig,
     MotionGenPlanConfig,

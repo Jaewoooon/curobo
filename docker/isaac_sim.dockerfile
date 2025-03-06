@@ -11,7 +11,7 @@
 ARG DEBIAN_FRONTEND=noninteractive
 ARG BASE_DIST=ubuntu20.04
 ARG CUDA_VERSION=11.4.2
-ARG ISAAC_SIM_VERSION=4.0.0
+ARG ISAAC_SIM_VERSION=4.5.0
 
 
 FROM nvcr.io/nvidia/isaac-sim:${ISAAC_SIM_VERSION} AS isaac-sim
@@ -153,8 +153,6 @@ WORKDIR /isaac-sim
 ENV TORCH_CUDA_ARCH_LIST="7.0+PTX"
 
 
-
-
 # create an alias for omniverse python
 ENV omni_python='/isaac-sim/python.sh'
 
@@ -198,6 +196,15 @@ RUN cd /pkgs && wget https://cmake.org/files/v3.27/cmake-3.27.1.tar.gz && \
     make -j8 && \
     make install &&  rm -rf /var/lib/apt/lists/*
 
+# Install ROS dependencies and colcon build tools
+RUN apt-get update && apt-get install -y \
+    python3-rosdep \
+    python3-rosinstall \
+    python3-rosinstall-generator \
+    python3-wstool \
+    build-essential \
+    python3-colcon-common-extensions \
+    && rm -rf /var/lib/apt/lists/*
 
 ENV USE_CX11_ABI=0
 ENV PRE_CX11_ABI=ON
